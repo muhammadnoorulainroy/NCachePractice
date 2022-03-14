@@ -104,6 +104,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BulkCrudOperations.cs" />
+    <Compile Include="Events.cs" />
+    <Compile Include="Groups.cs" />
+    <Compile Include="NamedTags.cs" />
+    <Compile Include="Product.cs" />
+    <Compile Include="PubSub.cs" />
     <Compile Include="Streaming.cs" />
     <Compile Include="PessimisticLocking.cs" />
     <Compile Include="Program.cs" />

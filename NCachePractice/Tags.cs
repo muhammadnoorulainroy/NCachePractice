@@ -5,291 +5,161 @@ using System.Text;
 using System.Threading.Tasks;
 using Alachisoft.NCache.Runtime.Caching;
 using Alachisoft.NCache.Client;
-using Alachisoft.NCache.Sample.Data;
 using System.Configuration;
-using System.Collections.Generic;
 
 namespace NCachePractice
 {
     public class Tags
     {
-        private static ICache _cache;
-
-
+        private static ICache cache;
+        private static Tag[] tags;
         public static void Run()
         {
-            InitializeCache();
+            Initialize();
+            InitializeArray();
+            AddUsersWithTags(tags);
+            //GetUserDataByOneTag(tags[3]);
 
-            // Adding items with named Tags       
-            // These tags are used to identify products who are ISOCertified, QCPassed and fall in ClassA
-            Tag[] tagList = new Tag[3];
-            tagList[0] = new Tag("ISOCertified");
-            tagList[1] = new Tag("QCPassed");
-            tagList[2] = new Tag("ClassA");
+            GetByAnyTag(tags);
+            //GetByAllTag(new Tag[2] { tags[0], tags[1] });
 
-            // Add Items in cache
-            AddItems(tagList);
+           // RemoveByAllTags(new Tag[2] { tags[0], tags[1] });
+           
+            RemoveByAnyTag(tags);
 
-            // Get Items using tags
-            GetItemsWithTag();
-
-
-            // Get keys by tags
-            // Here keys can be retrived from the cache via following three methods
-            // Get keys by a specific tag
-            GetKeysByTag(tagList[0]);
-
-            // Get keys where all the tags match
-            GetKeysByMultipleTags(tagList);
-
-            // Get keys where any item in tagList matches
-            GetKeysByAnyTag(tagList);
-
-
-            // Get Data by tags
-            // Here values can be retrived from the cache via following three methods
-            // Get values by specified tag
-            GetValuesByTag(tagList[0]);
-
-            // Get those values only where complete tagList matches
-            GetValuesByMultipleTags(tagList);
-
-            // Retrivies values where any item in tagList matches
-            GetValuesByAnyTag(tagList);
-
-            // Remove items from Cache by tags
-            // Removes values by specified tag
-            RemoveItemsByTag(tagList[0]);
-
-            // Removes those values only where complete tagList matches
-            RemoveItemsByMultipleTags(tagList);
-
-            // Removes values where any item in tagList matches
-            RemoveItemsByAnyTag(tagList);
-
-            Console.WriteLine();
-
-            // Dispose cache once done
-            _cache.Dispose();
+            GetByAnyTag(tags);
+        }
+        private static void Initialize()
+        {
+            cache = CacheManager.GetCache("ClusteredCache-2");
+            cache.Clear();
+            Console.WriteLine("Cache has been initialized!");
         }
 
-        /// <summary>
-        /// This method initializes the cache.
-        /// </summary>
-        private static void InitializeCache()
+        //initialize array with tags
+        private static void InitializeArray()
         {
-            string cache = ConfigurationManager.AppSettings["CacheId"];
+            tags = new Tag[14];
+            tags[0] = new Tag("Doctor");
+            tags[1] = new Tag("CardiacSurgeon");
+            tags[2] = new Tag("OrthopedicSurgeon");
+            tags[3] = new Tag("Physician");
+            tags[4] = new Tag("Engineer");
+            tags[5] = new Tag("SoftwareEngineer");
+            tags[6] = new Tag("MechanicalEngineer");
+            tags[7] = new Tag("Teacher");
+            tags[8] = new Tag("SchoolTeacher");
+            tags[9] = new Tag("CollegeTeacher");
+            tags[10] = new Tag("UniversityTeacher");
+            tags[11] = new Tag("BioTeacher");
+            tags[12] = new Tag("MathTeacher");
+            tags[13] = new Tag("HistoryTeacher");
+        }
 
-            if (String.IsNullOrEmpty(cache))
+        private static void AddUsersWithTags(Tag[] tagList)
+        {
+            //Add Cardiac Surgeons in cache
+            AddTaggedUsersInCache(1, "Dr. Shehzad Roy", 33, new Tag[2] { tags[0], tags[1] });
+            AddTaggedUsersInCache(2, "Dr. Sajjad Kharal", 50, new Tag[2] { tags[0], tags[1] });
+
+            //Add Orthopedic Surgeons
+            AddTaggedUsersInCache(3, "Dr. Zunnoorain", 33, new Tag[2] { tags[0], tags[2] });
+            AddTaggedUsersInCache(4, "Dr. Javeria", 50, new Tag[2] { tags[0], tags[2] });
+
+            //Add Physcians
+            AddTaggedUsersInCache(5, "Dr. Abdullah", 33, new Tag[2] { tags[0], tags[3] });
+            AddTaggedUsersInCache(6, "Dr. Ahmad", 50, new Tag[2] { tags[0], tags[3] });
+
+            //Add MBBS Doctors
+            AddTaggedUsersInCache(7, "Dr. Abdul Wahab", 20, new Tag[1] { tags[0]});
+            AddTaggedUsersInCache(8, "Dr. Noman", 23, new Tag[1] { tags[0] });
+        }
+
+        private static void AddTaggedUsersInCache(int id, string name, int age, Tag[] tagList)
+        {
+            CacheItem cacheItem = new CacheItem(new User(id, name, age));
+            cacheItem.Tags = tagList;
+            cache.Add(id+""+name, cacheItem);
+        }
+
+        private static void GetUserDataByOneTag(Tag tag)
+        {
+            IDictionary<string, User> data = cache.SearchService.GetByTag<User>(tag);
+            if (data != null && data.Count>0)
             {
-                Console.WriteLine("The Cache Name cannot be null or empty.");
-                return;
-            }
-
-            // Initialize an instance of the cache to begin performing operations:
-            _cache = NCache.Client.CacheManager.GetCache(cache);
-            _cache.Clear();
-            Console.WriteLine("Cache initialized successfully");
-        }
-
-        /// <summary>
-        /// This method add items in the cache.
-        /// </summary>
-        /// <param name="tagList"> Tags that will be added with the items. </param>
-        private static void AddItems(Tag[] tagList)
-        {
-            // 4 items added to cache
-            AddTagDataToCache(10, "ProductID: XYZ", "Z", "Z", tagList);
-            AddTagDataToCache(11, "ProductID: ABC", "Z", "Z", tagList);
-            AddTagDataToCache(12, "ProductID: 123", "Z", "Z", tagList);
-            AddTagDataToCache(13, "ProductID: 456", "Z", "Z", tagList);
-
-            Console.WriteLine("Items added to Cache");
-        }
-
-        /// <summary>
-        /// Add Tagged data to Cache
-        /// </summary>
-        /// <param name="productId"></param>
-        /// <param name="productName"></param>
-        /// <param name="group"></param>
-        /// <param name="className"></param>
-        /// <param name="category"></param>
-        private static void AddTagDataToCache(int productId, string productName, string className, string category, Tag[] tagList)
-        {
-            Product product = new Product() { Id = productId, Name = productName, ClassName = className, Category = category };
-
-            // create object key
-            string key = "product:" + product.Id.ToString();
-
-            // create CacheItem with your desired object
-            CacheItem item = new CacheItem(product);
-
-            // assign Tags to CacheItem object
-            item.Tags = tagList;
-
-            // add CacheItem object to cache
-            _cache.Add(key, item);
-        }
-
-
-        /// <summary>
-        /// This method fetches items from the cache.
-        /// </summary>
-        private static void GetItemsWithTag()
-        {
-            //Retrieve items who are QCPassed
-            Tag itemTag = new Tag("QCPassed");
-
-            IDictionary<string, Product> items = _cache.SearchService.GetByTag<Product>(itemTag);
-            if (items.Count > 0)
-            {
-                IEnumerator iter = items.Values.GetEnumerator();
-                while (iter.MoveNext())
+                Console.WriteLine("\nFollowing Users Found By Tag " + tag.TagName+"\n");
+                foreach (KeyValuePair<string, User> item in data)
                 {
-                    Console.WriteLine(((Product)iter.Current).Name);
+                    DisplayUserDetails(item.Value);
                 }
             }
-        }
-
-        /// <summary>
-        /// This method fetches keys from the cache that have a specific tag.
-        /// </summary>
-        /// <param name="tag"> Tag that will be used to fetch data. </param>
-        private static void GetKeysByTag(Tag tag)
-        {
-            //Retrieves keys by specified tag
-            ICollection<string> keysByTag = _cache.SearchService.GetKeysByTag(tag);
-
-            if (keysByTag.Count > 0)
+            else
             {
-                IEnumerator iter = keysByTag.GetEnumerator();
-                while (iter.MoveNext())
-                {
-                    Console.WriteLine(iter.Current.ToString());
-                }
+                Console.WriteLine("No user found against the provided tag");
             }
         }
 
-        /// <summary>
-        /// /// This method fetches keys from the cache that have all the specified tags.
-        /// </summary>
-        /// <param name="tagList"> Tags that will be used to fetch data. </param>
-        private static void GetKeysByMultipleTags(Tag[] tagList)
+        private static void GetByAnyTag(Tag[] tags)
         {
-            //Retrieves those keys only where complete tagList matches
-            ICollection<string> keysByEntireTagList = _cache.SearchService.GetKeysByTags(tagList, TagSearchOptions.ByAllTags);
 
-            if (keysByEntireTagList.Count > 0)
+            IDictionary<string, User> data = cache.SearchService.GetByTags<User>(tags, TagSearchOptions.ByAnyTag);
+            if (data != null && data.Count > 0)
             {
-                IEnumerator iter = keysByEntireTagList.GetEnumerator();
-                while (iter.MoveNext())
+                Console.WriteLine("\nFollowing Users Found through GetByAnyTag Method");
+                foreach (KeyValuePair<string, User> item in data)
                 {
-                    Console.WriteLine(iter.Current.ToString());
+                    DisplayUserDetails(item.Value);
                 }
+            }
+            else
+            {
+                Console.WriteLine("No user found matching any of the provided tags");
             }
         }
 
-        /// <summary>
-        /// This method fetches keys from the cache that have any of the specified tag.
-        /// </summary>
-        /// <param name="tagList"> Tags that will be used to fetch data from the cache. </param>
-        private static void GetKeysByAnyTag(Tag[] tagList)
+        private static void GetByAllTag(Tag[] tags)
         {
-            ICollection<string> keysByAnyTagInList = _cache.SearchService.GetKeysByTags(tagList, TagSearchOptions.ByAnyTag);
 
-            if (keysByAnyTagInList.Count > 0)
+            IDictionary<string, User> data = cache.SearchService.GetByTags<User>(tags, TagSearchOptions.ByAllTags);
+            if (data != null && data.Count > 0 )
             {
-                IEnumerator iter = keysByAnyTagInList.GetEnumerator();
-                while (iter.MoveNext())
+                Console.WriteLine("\nFollowing Users Found through GetByAllTags Method");
+                foreach (KeyValuePair<string, User> item in data)
                 {
-                    Console.WriteLine(iter.Current.ToString());
+                    DisplayUserDetails(item.Value);
                 }
+            }
+            else
+            {
+                Console.WriteLine("No user found that matches all of the provided tags");
             }
         }
 
-        /// <summary>
-        /// This method fetches values from the cache that have a specific tag.
-        /// </summary>
-        /// <param name="tag"> Tag that will be used to fetch data from the cache. </param>
-        private static void GetValuesByTag(Tag tag)
+        //Remove cache items which match the provided tag
+        private static void RemoveByTag(Tag tag)
         {
-            IDictionary<string, Product> valuesByTag = _cache.SearchService.GetByTag<Product>(tag);
-
-            if (valuesByTag.Count > 0)
-            {
-                foreach (string key in valuesByTag.Keys)
-                {
-                    Console.WriteLine("Fetched value by tag of the key : {0}", key);
-                }
-            }
+            cache.SearchService.RemoveByTag(tag);
+            Console.WriteLine("\nItems with tag " + tag.TagName + " have been removed");
         }
 
-        /// <summary>
-        /// This method fetches values from the cache that have all the specified tags.
-        /// </summary>
-        /// <param name="tagList"> Tags that will be used to fetch data from the cache. </param>
-        private static void GetValuesByMultipleTags(Tag[] tagList)
+        //Remove cache items that match any one of the provided tags
+        private static void RemoveByAnyTag(Tag[] tagList)
         {
-            IDictionary<string, Product> valuesByEntireTagList = _cache.SearchService.GetByTags<Product>(tagList, TagSearchOptions.ByAllTags);
-
-            if (valuesByEntireTagList.Count > 0)
-            {
-                foreach (string key in valuesByEntireTagList.Keys)
-                {
-                    Console.WriteLine("Fetched value by Entire tag-list of the key : {0}", key);
-                }
-            }
+            cache.SearchService.RemoveByTags(tagList, TagSearchOptions.ByAnyTag);
+            Console.WriteLine("Items removed by RemoveByAnyTag Method");
         }
 
-        /// <summary>
-        /// This method fetches values from the cache that have any of the specified tags.
-        /// </summary>
-        /// <param name="tagList"> Tags that will be used to fetch data from the cache. </param>
-        private static void GetValuesByAnyTag(Tag[] tagList)
+        //Remove cache items that match all of the provided tags
+        private static void RemoveByAllTags(Tag[] tagList)
         {
-            IDictionary<string, Product> valuesByAnyTagInList = _cache.SearchService.GetByTags<Product>(tagList, TagSearchOptions.ByAnyTag);
-
-            if (valuesByAnyTagInList.Count > 0)
-            {
-                foreach (string key in valuesByAnyTagInList.Keys)
-                {
-                    Console.WriteLine("Fetched value by any tag of the key : {0}", key);
-                }
-            }
+            cache.SearchService.RemoveByTags(tagList, TagSearchOptions.ByAllTags);
+            Console.WriteLine("Items removed by RemoveByAllTags Method");
         }
-
-        /// <summary>
-        /// This method removes items from the cache that have a specific tag.
-        /// </summary>
-        /// <param name="tag"> Tag that will be used to remove data from the cache. </param>
-        private static void RemoveItemsByTag(Tag tag)
+        private static void DisplayUserDetails(User user)
         {
-            _cache.SearchService.RemoveByTag(tag);
-
-            Console.WriteLine("Items removed by tag.");
-        }
-
-        /// <summary>
-        /// This method removes items from the cache that have all the specified tags.
-        /// </summary>
-        /// <param name="tagList"> Tags that will be used to remove data from the cache. </param>
-        private static void RemoveItemsByMultipleTags(Tag[] tagList)
-        {
-            _cache.SearchService.RemoveByTags(tagList, TagSearchOptions.ByAllTags);
-
-            Console.WriteLine("Items removed by multiple tags.");
-        }
-
-        /// <summary>
-        /// This method removes items from the cache that have any of the specified tags.
-        /// </summary>
-        /// <param name="tagList"> Tags that will be used to remove data from the cache. </param>
-        private static void RemoveItemsByAnyTag(Tag[] tagList)
-        {
-            _cache.SearchService.RemoveByTags(tagList, TagSearchOptions.ByAnyTag);
-
-            Console.WriteLine("Items removed by any tag.");
+            Console.WriteLine("Name:       " + user.Name);
+            Console.WriteLine("Age:        " + user.Age);
+            Console.WriteLine("==========================================");
         }
     }
 }

@@ -26,7 +26,12 @@ namespace NCachePractice
         static void Main(string[] args)
         {
             //PessimisticLocking.Run();
-            Streaming.Run();
+            //Streaming.Run();
+            //Groups.Run();
+            //Tags.Run();
+            //NamedTags.Run();
+            //Events.Run();
+            PubSub.Run();
             // Specify the cache name
             //string cacheName = "ClusteredCache-2";
 
