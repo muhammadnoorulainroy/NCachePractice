@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4386B4F4-00C2-4FF4-9189-5C3955210337}</ProjectGuid>
+    <ProjectGuid>{31BADABB-F3C4-4CCA-B48C-583801087624}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>NCachePractice</RootNamespace>
-    <AssemblyName>NCachePractice</AssemblyName>
+    <RootNamespace>Dependency</RootNamespace>
+    <AssemblyName>Dependency</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -106,19 +106,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BulkCrudOperations.cs" />
-    <Compile Include="ContinousQuery.cs" />
-    <Compile Include="Events.cs" />
-    <Compile Include="Groups.cs" />
-    <Compile Include="NamedTags.cs" />
-    <Compile Include="PubSub.cs" />
-    <Compile Include="Streaming.cs" />
-    <Compile Include="PessimisticLocking.cs" />
+    <Compile Include="AggregateDependency.cs" />
+    <Compile Include="DatabaseDependency.cs" />
+    <Compile Include="FileBasedDependency.cs" />
+    <Compile Include="KeyBasedDependency.cs" />
+    <Compile Include="PollingDependency.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleMultiThreadedCrudOperations.cs" />
-    <Compile Include="Tags.cs" />
-    <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Alachisoft.NCache.Client;
 using Alachisoft.NCache.Runtime.Exceptions;
+using DataModel;
 
 namespace NCachePractice
 {
@@ -32,6 +33,7 @@ namespace NCachePractice
             //NamedTags.Run();
             //Events.Run();
             PubSub.Run();
+            //ContinousQuery.Run();
             // Specify the cache name
             //string cacheName = "ClusteredCache-2";
 

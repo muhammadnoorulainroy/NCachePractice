@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Alachisoft.NCache.Client;
 using Alachisoft.NCache.Runtime.Exceptions;
+using DataModel;
 
 namespace NCachePractice
 {

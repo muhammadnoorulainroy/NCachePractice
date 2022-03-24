@@ -7,6 +7,7 @@ using Alachisoft.NCache.Runtime.Caching;
 using Alachisoft.NCache.Runtime.Events;
 using Alachisoft.NCache.Client;
 using System.Configuration;
+using DataModel;
 namespace NCachePractice
 {
     public class Events

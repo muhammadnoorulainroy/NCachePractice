@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Alachisoft.NCache.Runtime.Caching;
 using Alachisoft.NCache.Client;
 using System.Configuration;
+using DataModel;
 
 namespace NCachePractice
 {

@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Alachisoft.NCache.Client;
 using Alachisoft.NCache.Runtime.Exceptions;
+using DataModel;
+
 namespace NCachePractice
 {
     public class Streaming

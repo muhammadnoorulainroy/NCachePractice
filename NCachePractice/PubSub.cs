@@ -8,7 +8,7 @@ using Alachisoft.NCache.Runtime.Caching;
 using Alachisoft.NCache.Runtime.Events;
 using Alachisoft.NCache.Client;
 using System.Configuration;
-
+using DataModel;
 namespace NCachePractice
 {
     public class PubSub
@@ -123,13 +123,15 @@ namespace NCachePractice
         {
             Console.Write("\nEnter topic name:");
             string topic = Console.ReadLine();
+            Console.Write("\nEnter subscription name:");
+            string subscription = Console.ReadLine();
             //create topic if it does not exist
             ITopic topic1 = cache.MessagingService.GetTopic(topic);
             if (topic1 == null)
             {
                 CreateTopic(topic);
             }
-            SubscribeToTopicNonDurably(topic);
+            SubscribeToTopicSharedDurably(topic, subscription);
         }
 
         //Unsubscribe Topic
@@ -201,14 +203,31 @@ namespace NCachePractice
             }
         }
 
-        // create duarable subscription
-        private static void SubscribeToTopicDurably(string topicName, string subscriptionName)
+        // create duarable subscription with shared policy
+        private static void SubscribeToTopicSharedDurably(string topicName, string subscriptionName)
         {
             ITopic topic = cache.MessagingService.GetTopic(topicName);
 
             //Create IDurable Subscription
             IDurableTopicSubscription durableTopicSubscription = topic.CreateDurableSubscription(subscriptionName,
                 SubscriptionPolicy.Shared, MessageReceived, TimeSpan.FromSeconds(25));
+        }
+
+        // create duarable subscription with exclusive policy
+        private static void SubscribeToTopicExclusiveDurably(string topicName, string subscriptionName)
+        {
+            try
+            {
+                ITopic topic = cache.MessagingService.GetTopic(topicName);
+
+                //Create IDurable Subscription
+                IDurableTopicSubscription durableTopicSubscription = topic.CreateDurableSubscription(subscriptionName,
+                    SubscriptionPolicy.Exclusive, MessageReceived, TimeSpan.FromSeconds(25));
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         // Delete tpoics
@@ -247,7 +266,7 @@ namespace NCachePractice
         private static void OnFailureMessageReceived(object sender, MessageFailedEventArgs args)
         {
             // Failure reason can be get from args.MessageFailureReason
-            Console.WriteLine("Messaged Failed to Publish due to " + args.MessageFailureReason);
+            Console.WriteLine("\nMessaged Failed to Publish!\n Reason: " + args.MessageFailureReason);
         }
 
         private static void TopicDeleted(object sender, TopicDeleteEventArgs args)
@@ -256,9 +275,6 @@ namespace NCachePractice
             Console.WriteLine("Topic " + args.TopicName + " has been deleted");
         }
 
-        private static void Topic_MessageDeliveryFailure(object sender, MessageFailedEventArgs args)
-        {
-            throw new NotImplementedException();
-        }
+        
     }
 }

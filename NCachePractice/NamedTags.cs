@@ -8,6 +8,8 @@ using Alachisoft.NCache.Client;
 using Alachisoft.NCache.Runtime.Exceptions;
 using Alachisoft.NCache.Runtime.Caching;
 using System.Configuration;
+using DataModel;
+
 namespace NCachePractice
 {
     /// <summary>
@@ -34,10 +36,11 @@ namespace NCachePractice
             AddItems(namedTagDict);
 
             // Fetch Items from the cache
-            GetItems("1Coke");
+            //GetItems("1Coke");
+            GetData();
 
             // Dispose cache once done
-            _cache.Dispose();
+            //_cache.Dispose();
         }
 
         /// <summary>
@@ -45,7 +48,7 @@ namespace NCachePractice
         /// </summary>
         private static void InitializeCache()
         {
-            _cache = CacheManager.GetCache("ClusteredCache-2");
+            _cache = CacheManager.GetCache("PRCache");
             _cache.Clear();
             Console.WriteLine("Cache has been initialized!");
         }
@@ -80,6 +83,23 @@ namespace NCachePractice
            foreach(var tag in item.NamedTags)
             {
                 Console.WriteLine(tag.ToString());
+            }
+        }
+
+        private static void GetData()
+        {
+            string query = "SELECT DataModel.Product WHERE this.Discount >= 0.05";
+            var queryCommand = new QueryCommand(query);
+            ICacheReader result = _cache.SearchService.ExecuteReader(queryCommand, true);
+            if (!result.IsClosed)
+            {
+                Console.WriteLine("==========");
+                while (result.Read())
+                {
+                    Console.WriteLine(result.GetInt32(0));
+                    //Console.WriteLine(result.GetValue<Product>(1).Price);
+                    Console.WriteLine("==========");
+                }
             }
         }
     }
