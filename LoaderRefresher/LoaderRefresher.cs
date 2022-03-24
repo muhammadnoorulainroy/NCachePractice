@@ -40,7 +40,6 @@ namespace LoaderRefresher
                     {
                         CacheItem cacheItem = new CacheItem(item);
                         cache.Insert($"ProductId:{item.Id}", cacheItem);
-                        cacheItem.ResyncOptions.
                     }
                     break;
                 case "customers":
